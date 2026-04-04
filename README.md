@@ -1,92 +1,52 @@
-# VoiceIQ - Call Center Compliance API
+# VoiceIQ — Call Center Compliance API
 
-## Description
-An intelligent call center analytics API that processes voice recordings
-in Tamil (Tanglish) and Hindi (Hinglish), performs speech-to-text,
-validates SOP compliance, and categorizes payment preferences.
+> Intelligent call center analytics system that processes Tamil (Tanglish) and Hindi (Hinglish) voice recordings, performs speech-to-text, validates SOP compliance, and categorizes payment preferences.
 
-## Tech Stack
-- **Language:** Python 3.12
-- **Framework:** FastAPI
-- **Speech-to-Text:** Groq Whisper Large V3
-- **AI Model:** Groq LLaMA 3.3 70B
-- **Deployment:** Render Cloud
+---
 
-## Setup Instructions
-1. Clone the repository
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/call-center-api.git
-   cd call-center-api
-   ```
-2. Install dependencies
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Copy `.env.example` to `.env` and fill in your API keys
-   ```bash
-   cp .env.example .env
-   ```
-4. Run the server
-   ```bash
-   uvicorn src.main:app --reload
-   ```
-5. Open `http://127.0.0.1:8000` in your browser
+## 🌐 Live Links
 
-## API Usage
+- **Live Demo:** https://call-center-api-drsl.onrender.com
+- **API Endpoint:** https://call-center-api-drsl.onrender.com/api/call-analytics
+- **GitHub Repo:** https://github.com/BeulaG/call-center-api
 
-### Analyze a Call Recording
-```
-POST /api/call-analytics
-Header: x-api-key: sk_track3_987654321
-Content-Type: application/json
-```
+---
 
-**Request Body:**
-```json
-{
-  "language": "Tamil",
-  "audioFormat": "mp3",
-  "audioBase64": "<base64_encoded_mp3>"
-}
-```
+## 🚀 Features
 
-**Response:**
-```json
-{
-  "status": "success",
-  "language": "Tamil",
-  "transcript": "...",
-  "summary": "...",
-  "sop_validation": {
-    "greeting": true,
-    "identification": true,
-    "problemStatement": true,
-    "solutionOffering": true,
-    "closing": true,
-    "complianceScore": 1.0,
-    "adherenceStatus": "FOLLOWED",
-    "explanation": "..."
-  },
-  "analytics": {
-    "paymentPreference": "EMI",
-    "rejectionReason": "NONE",
-    "sentiment": "Positive"
-  },
-  "keywords": ["keyword1", "keyword2"]
-}
-```
+- 🎤 Speech to Text — Transcribes Tamil Tanglish and Hindi Hinglish using Groq Whisper Large V3
+- 📋 SOP Validation — Validates 5 steps: Greeting → Identification → Problem → Solution → Closing
+- 💳 Payment Classification — Detects EMI, Full Payment, Partial Payment, or Down Payment
+- 🔍 Rejection Analysis — Identifies Budget Constraints, High Interest, Already Paid, Not Interested
+- 📊 Sentiment Analysis — Classifies sentiment as Positive, Negative, or Neutral
+- 🏷️ Keyword Extraction — Extracts 8 to 12 business terms from each conversation
+- 🔒 API Key Auth — Secured with mandatory x-api-key header, returns 401 if invalid
 
-## Environment Variables
-```
-GROQ_API_KEY=your_groq_api_key_here
-API_SECRET_KEY=sk_track3_987654321
-```
+---
 
-## Approach
-1. Audio is received as Base64 encoded MP3
-2. Decoded and transcribed via Groq Whisper Large V3
-3. Transcript analyzed by LLaMA 3.3 70B for SOP compliance
-4. Returns structured JSON with compliance score, analytics, and keywords
+## 🛠️ Tech Stack
 
-## Built For
-GUVI Hackathon — Call Center Compliance Track
+| Component | Technology |
+|---|---|
+| Language | Python 3.12 |
+| Framework | FastAPI |
+| Speech-to-Text | Groq Whisper Large V3 |
+| AI Analysis | Groq LLaMA 3.3 70B |
+| Deployment | Render Cloud (Free Tier) |
+| Frontend | HTML, CSS, Vanilla JavaScript |
+
+---
+
+## 🤖 AI Tools Used
+
+| Tool | Purpose |
+|---|---|
+| Claude by Anthropic | Used for coding assistance, debugging, and development support during building |
+| Groq Whisper Large V3 | Used at runtime for speech-to-text transcription of Tamil and Hindi audio recordings |
+| Groq LLaMA 3.3 70B | Used at runtime for SOP analysis, sentiment detection, payment classification, and keyword extraction |
+
+> ⚠️ As per the AI Tool Policy, all AI tools used in this project are fully disclosed above.
+
+---
+
+## 📁 Project Structure
