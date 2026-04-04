@@ -59,3 +59,127 @@
     ├── requirements.txt   # Python dependencies
     ├── .env.example       # Environment variables template
     └── README.md          # Project documentation
+
+---
+
+## ⚙️ Setup Instructions
+
+1. Clone the repository
+
+       git clone https://github.com/BeulaG/call-center-api.git
+       cd call-center-api
+
+2. Install dependencies
+
+       pip install -r requirements.txt
+
+3. Copy env file and fill in your keys
+
+       cp .env.example .env
+
+4. Run the application
+
+       uvicorn src.main:app --reload
+
+5. Open in your browser
+
+       http://127.0.0.1:8000
+
+---
+
+## 🔌 API Usage
+
+**Endpoint**
+
+    POST /api/call-analytics
+
+**Headers**
+
+    Content-Type: application/json
+    x-api-key: sk_track3_987654321
+
+**Request Body**
+
+    {
+      "language": "Tamil",
+      "audioFormat": "mp3",
+      "audioBase64": "your_base64_encoded_mp3_here"
+    }
+
+**Response**
+
+    {
+      "status": "success",
+      "language": "Tamil",
+      "transcript": "வணக்கம்...",
+      "summary": "Agent discussed Data Science course with EMI options.",
+      "sop_validation": {
+        "greeting": true,
+        "identification": true,
+        "problemStatement": true,
+        "solutionOffering": true,
+        "closing": false,
+        "complianceScore": 0.8,
+        "adherenceStatus": "NOT_FOLLOWED",
+        "explanation": "Closing was missing. All other SOP steps were followed."
+      },
+      "analytics": {
+        "paymentPreference": "EMI",
+        "rejectionReason": "NONE",
+        "sentiment": "Positive"
+      },
+      "keywords": ["Data Science", "EMI", "IIT Madras", "placement"]
+    }
+
+---
+
+## 🏗️ Architecture Overview
+
+    Client sends MP3 audio as Base64
+             ↓
+    FastAPI receives POST /api/call-analytics
+             ↓
+    Step 1: Validate x-api-key header → 401 if invalid
+             ↓
+    Step 2: Decode Base64 → MP3 audio bytes
+             ↓
+    Step 3: Groq Whisper Large V3 → Tamil / Hindi Transcript
+             ↓
+    Step 4: Groq LLaMA 3.3 70B → SOP Validation + Analytics + Keywords
+             ↓
+    Step 5: Return structured JSON response
+
+---
+
+## 🌍 Environment Variables
+
+| Variable | Description |
+|---|---|
+| GROQ_API_KEY | Your free Groq API key from console.groq.com |
+| API_SECRET_KEY | API protection key sent in x-api-key header |
+
+---
+
+## ⚠️ Known Limitations
+
+- Render free tier may have 50+ second cold start on first request after inactivity
+- Whisper transcription accuracy may vary for noisy or low quality audio
+- SOP scoring depends on transcript quality — poor audio affects analysis accuracy
+- Groq free tier has rate limits which may cause delays under heavy usage
+
+---
+
+## 💡 Approach & Strategy
+
+1. Audio received as Base64 encoded MP3 in the request body
+2. Decoded and saved to a temporary file
+3. Sent to Groq Whisper Large V3 for Tamil or Hindi transcription
+4. Transcript sent to Groq LLaMA 3.3 70B with a detailed compliance prompt
+5. AI analyzes all 5 SOP steps, payment intent, rejection reason, sentiment, and keywords
+6. Structured JSON returned matching the exact required response format
+
+---
+
+## 🏆 Built For
+
+**GUVI Hackathon 2026 — Call Center Compliance Track (Track 3)**
