@@ -1,0 +1,663 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoiceIQ - Call Center Compliance</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+/* ── CSS Variables ── */
+:root {
+  --bg: #05070f;
+  --bg2: #0b0e1a;
+  --bg3: #111520;
+  --bg4: #181c2e;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #f0f2ff;
+  --text2: #8b90b8;
+  --text3: #555a7a;
+  --accent: #6c63ff;
+  --accent2: #8b83ff;
+  --accent3: #4f46e5;
+  --teal: #00d4aa;
+  --red: #ff4757;
+  --green: #2ed573;
+  --pink: #ff6b9d;
+}
+
+/* ── Reset ── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Hero Section ── */
+.hero {
+  position: relative;
+  padding: 80px 40px 60px;
+  text-align: center;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -100px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+}
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+  padding: 8px 18px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--text2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.logo-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 8px var(--teal);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #fff 30%, #8b83ff 70%, #00d4aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero p {
+  font-size: 1.1rem;
+  color: var(--text2);
+  max-width: 480px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+  font-weight: 300;
+}
+.hero-badges { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+.badge-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.badge-dot.accent { background: var(--accent); }
+.badge-dot.teal { background: var(--teal); }
+
+/* ── Layout ── */
+.container { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
+.section { margin-bottom: 48px; }
+.section-heading {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-heading::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── Analyzer Card ── */
+.analyzer-card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 40px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.analyzer-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(108,99,255,0.5), transparent);
+}
+.card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+.card-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--accent3), var(--accent));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.card-title { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 700; }
+.card-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+/* ── Form Elements ── */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+@media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; }
+.form-select, .form-input {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 13px 16px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+}
+.form-select:focus, .form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+}
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 14px; top: 50%; transform: translateY(-50%);
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--text2);
+  pointer-events: none;
+}
+
+/* ── File Upload ── */
+.file-upload {
+  background: var(--bg3);
+  border: 1px dashed var(--border2);
+  border-radius: 12px;
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+.file-upload:hover { border-color: var(--accent); background: var(--bg4); }
+.file-upload.active { border-color: var(--teal); border-style: solid; }
+.file-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.file-icon { font-size: 28px; margin-bottom: 8px; }
+.file-text { font-size: 14px; color: var(--text2); }
+.file-text span { color: var(--accent2); font-weight: 500; }
+.file-name { font-size: 13px; color: var(--teal); margin-top: 6px; display: none; }
+
+/* ── Analyze Button ── */
+.analyze-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--accent3) 0%, var(--accent) 50%, #9c94ff 100%);
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: opacity 0.2s, transform 0.2s;
+  letter-spacing: 0.02em;
+}
+.analyze-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ── Loading State ── */
+.loading-state { display: none; text-align: center; padding: 40px 20px; }
+.wave-bars { display: flex; justify-content: center; align-items: flex-end; gap: 4px; height: 48px; margin-bottom: 16px; }
+.wave-bar { width: 5px; background: var(--accent); border-radius: 3px; animation: wave 1.2s ease-in-out infinite; }
+.wave-bar:nth-child(1) { height: 20px; animation-delay: 0s; }
+.wave-bar:nth-child(2) { height: 35px; animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { height: 48px; animation-delay: 0.2s; background: var(--teal); }
+.wave-bar:nth-child(4) { height: 35px; animation-delay: 0.3s; }
+.wave-bar:nth-child(5) { height: 20px; animation-delay: 0.4s; }
+.wave-bar:nth-child(6) { height: 30px; animation-delay: 0.5s; background: var(--pink); }
+.wave-bar:nth-child(7) { height: 42px; animation-delay: 0.6s; }
+.wave-bar:nth-child(8) { height: 25px; animation-delay: 0.7s; }
+@keyframes wave { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+.loading-text { color: var(--text2); font-size: 14px; }
+.loading-step { color: var(--accent2); font-size: 13px; margin-top: 6px; }
+
+/* ── Error Box ── */
+.error-box {
+  display: none;
+  background: rgba(255,71,87,0.08);
+  border: 1px solid rgba(255,71,87,0.3);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: #ff7675;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+/* ── Results ── */
+.results { display: none; margin-top: 32px; }
+.results-header { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.results-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
+.results-badge {
+  padding: 4px 12px;
+  background: rgba(46,213,115,0.1);
+  border: 1px solid rgba(46,213,115,0.3);
+  border-radius: 100px;
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 500;
+}
+
+/* ── SOP Strip ── */
+.sop-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px; }
+@media (max-width: 500px) { .sop-strip { grid-template-columns: repeat(3, 1fr); } }
+.sop-step { background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; padding: 16px 10px; text-align: center; }
+.sop-step.pass { border-color: rgba(46,213,115,0.4); background: rgba(46,213,115,0.05); }
+.sop-step.fail { border-color: rgba(255,71,87,0.3); background: rgba(255,71,87,0.04); }
+.sop-icon { font-size: 22px; margin-bottom: 6px; }
+.sop-name { font-size: 11px; color: var(--text2); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+.sop-status { font-size: 10px; margin-top: 3px; }
+.sop-status.pass { color: var(--green); }
+.sop-status.fail { color: var(--red); }
+
+/* ── Score Row ── */
+.score-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.score-label { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+.score-bar-wrap { background: var(--bg4); border-radius: 100px; height: 6px; overflow: hidden; }
+.score-bar { height: 100%; border-radius: 100px; transition: width 1s cubic-bezier(0.4,0,0.2,1); background: linear-gradient(90deg, var(--accent), var(--teal)); }
+.score-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text); }
+.score-suffix { font-size: 14px; color: var(--text2); }
+.adherence-tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.adherence-tag.followed { background: rgba(46,213,115,0.12); color: var(--green); border: 1px solid rgba(46,213,115,0.3); }
+.adherence-tag.not-followed { background: rgba(255,71,87,0.1); color: var(--red); border: 1px solid rgba(255,71,87,0.25); }
+
+/* ── Analytics Grid ── */
+.analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 500px) { .analytics-grid { grid-template-columns: 1fr; } }
+.analytics-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; padding: 18px; text-align: center; }
+.analytics-emoji { font-size: 26px; margin-bottom: 8px; }
+.analytics-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.analytics-value { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); }
+
+/* ── Section Labels ── */
+.section-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── Text Boxes ── */
+.text-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; padding: 18px; font-size: 14px; line-height: 1.8; color: var(--text2); max-height: 160px; overflow-y: auto; margin-bottom: 16px; }
+
+/* ── Keywords ── */
+.keywords-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.keyword-chip { padding: 6px 14px; background: rgba(108,99,255,0.08); border: 1px solid rgba(108,99,255,0.2); border-radius: 100px; font-size: 13px; color: var(--accent2); }
+
+/* ── Explanation Box ── */
+.explanation-box { background: rgba(0,212,170,0.04); border: 1px solid rgba(0,212,170,0.15); border-radius: 14px; padding: 16px 18px; font-size: 13px; color: var(--text2); line-height: 1.7; display: flex; gap: 10px; align-items: flex-start; }
+.explanation-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Feature Cards ── */
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.feature-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px; transition: border-color 0.3s, transform 0.3s; }
+.feature-card:hover { border-color: var(--border2); transform: translateY(-3px); }
+.feature-icon-wrap { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+.feature-icon-wrap.purple { background: rgba(108,99,255,0.12); }
+.feature-icon-wrap.teal { background: rgba(0,212,170,0.1); }
+.feature-icon-wrap.amber { background: rgba(255,165,2,0.1); }
+.feature-icon-wrap.pink { background: rgba(255,107,157,0.1); }
+.feature-icon-wrap.blue { background: rgba(55,138,221,0.1); }
+.feature-icon-wrap.green { background: rgba(46,213,115,0.1); }
+.feature-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+.feature-desc { font-size: 13px; color: var(--text2); line-height: 1.6; font-weight: 300; }
+
+/* ── Tech Stack ── */
+.tech-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 48px; }
+.tech-pill { padding: 8px 16px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 100px; font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+
+/* ── Footer ── */
+.footer { text-align: center; padding: 32px; border-top: 1px solid var(--border); color: var(--text3); font-size: 13px; }
+.footer span { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo-mark"><div class="logo-dot"></div>VoiceIQ Compliance Engine</div>
+  <h1>Call Center<br>Intelligence API</h1>
+  <p>Real-time AI analysis for Tamil & Hindi call recordings — transcription, SOP validation, and payment intelligence.</p>
+  <div class="hero-badges">
+    <span class="badge"><span class="badge-dot green"></span>Live & Deployed</span>
+    <span class="badge"><span class="badge-dot accent"></span>Groq Whisper STT</span>
+    <span class="badge"><span class="badge-dot teal"></span>LLaMA 3.3 70B</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── Analyzer Card ── -->
+  <div class="analyzer-card">
+    <div class="card-header">
+      <div class="card-icon">🎙</div>
+      <div>
+        <div class="card-title">Live Call Analyzer</div>
+        <div class="card-sub">Upload an MP3 recording to get instant compliance analysis</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Language</label>
+        <div class="select-wrap">
+          <select class="form-select" id="language">
+            <option value="Tamil">Tamil (Tanglish)</option>
+            <option value="Hindi">Hindi (Hinglish)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">API Key</label>
+        <input class="form-input" type="text" id="apiKey" value="sk_track3_987654321" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Audio Recording</label>
+      <div class="file-upload" id="fileUpload">
+        <input type="file" id="audioFile" accept=".mp3,audio/mp3,audio/mpeg" onchange="handleFile(this)" />
+        <div class="file-icon">🎵</div>
+        <div class="file-text">Drop your MP3 here or <span>browse files</span></div>
+        <div class="file-name" id="fileName"></div>
+      </div>
+    </div>
+
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeCall()">
+      Analyze Call Recording
+    </button>
+
+    <!-- Loading State -->
+    <div class="loading-state" id="loading">
+      <div class="wave-bars">
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+      </div>
+      <div class="loading-text">Processing your recording...</div>
+      <div class="loading-step" id="loadingStep">Transcribing audio with Whisper AI</div>
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <!-- Results Section -->
+    <div class="results" id="results">
+      <div class="results-header">
+        <div class="results-title">Analysis Complete</div>
+        <div class="results-badge">Success</div>
+      </div>
+
+      <div class="section-label">SOP Validation</div>
+      <div class="sop-strip" id="sopStrip"></div>
+
+      <div class="score-row">
+        <div>
+          <div class="score-label">Compliance Score</div>
+          <div class="score-bar-wrap">
+            <div class="score-bar" id="scoreBar" style="width:0%"></div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div><span class="score-value" id="scoreValue">0</span><span class="score-suffix">%</span></div>
+          <div style="margin-top:6px"><span class="adherence-tag" id="adherenceTag"></span></div>
+        </div>
+      </div>
+
+      <div class="explanation-box">
+        <span class="explanation-icon">💡</span>
+        <span id="explanationText"></span>
+      </div>
+
+      <div class="section-label" style="margin-top:20px">Call Analytics</div>
+      <div class="analytics-grid" id="analyticsGrid"></div>
+
+      <div class="section-label">Summary</div>
+      <div class="text-box" id="summaryBox"></div>
+
+      <div class="section-label">Transcript</div>
+      <div class="text-box" id="transcriptBox"></div>
+
+      <div class="section-label">Keywords Detected</div>
+      <div class="keywords-wrap" id="keywordsWrap"></div>
+    </div>
+  </div>
+
+  <!-- ── Features Section ── -->
+  <div class="section">
+    <div class="section-heading">Features</div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-wrap purple">🎤</div>
+        <div class="feature-title">Speech to Text</div>
+        <div class="feature-desc">Whisper Large V3 transcribes Tamil Tanglish and Hindi Hinglish with high accuracy.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap teal">📋</div>
+        <div class="feature-title">SOP Validation</div>
+        <div class="feature-desc">Validates all 5 script stages: Greeting to ID to Problem to Solution to Closing.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap amber">💳</div>
+        <div class="feature-title">Payment Analysis</div>
+        <div class="feature-desc">Classifies intent as EMI, Full Payment, Partial Payment, or Down Payment.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap pink">📊</div>
+        <div class="feature-title">Sentiment Engine</div>
+        <div class="feature-desc">Detects Positive, Negative, or Neutral customer sentiment in real time.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap blue">🔍</div>
+        <div class="feature-title">Rejection Analysis</div>
+        <div class="feature-desc">Identifies why a sale failed — budget, interest rate, or disinterest.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap green">🏷</div>
+        <div class="feature-title">Keyword Extraction</div>
+        <div class="feature-desc">Surfaces 8 to 12 business-critical terms from every conversation.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tech Stack Section ── -->
+  <div class="section">
+    <div class="section-heading">Tech Stack</div>
+    <div class="tech-row">
+      <span class="tech-pill">Python 3.12</span>
+      <span class="tech-pill">FastAPI</span>
+      <span class="tech-pill">Groq Whisper Large V3</span>
+      <span class="tech-pill">LLaMA 3.3 70B</span>
+      <span class="tech-pill">API Key Auth</span>
+      <span class="tech-pill">Render Cloud</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Built for <span>GUVI Hackathon</span> — Call Center Compliance Track
+</div>
+
+<script>
+function handleFile(input) {
+  const file = input.files[0];
+  if (file) {
+    const nameEl = document.getElementById('fileName');
+    nameEl.textContent = '✓ ' + file.name;
+    nameEl.style.display = 'block';
+    document.getElementById('fileUpload').classList.add('active');
+  }
+}
+
+const loadingSteps = [
+  'Decoding Base64 audio...',
+  'Transcribing with Whisper AI...',
+  'Analyzing with LLaMA 3.3 70B...',
+  'Extracting compliance metrics...',
+  'Finalizing results...'
+];
+let stepIdx = 0, stepInterval;
+
+async function analyzeCall() {
+  const fi = document.getElementById('audioFile');
+  const lang = document.getElementById('language').value;
+  const key = document.getElementById('apiKey').value;
+  const btn = document.getElementById('analyzeBtn');
+  const loading = document.getElementById('loading');
+  const results = document.getElementById('results');
+  const errorBox = document.getElementById('errorBox');
+
+  if (!fi.files[0]) { alert('Please select an MP3 file first!'); return; }
+
+  btn.disabled = true;
+  loading.style.display = 'block';
+  results.style.display = 'none';
+  errorBox.style.display = 'none';
+  stepIdx = 0;
+  document.getElementById('loadingStep').textContent = loadingSteps[0];
+  stepInterval = setInterval(() => {
+    stepIdx = (stepIdx + 1) % loadingSteps.length;
+    document.getElementById('loadingStep').textContent = loadingSteps[stepIdx];
+  }, 3000);
+
+  try {
+    const file = fi.files[0];
+    const base64 = await new Promise(resolve => {
+      const r = new FileReader();
+      r.onload = e => resolve(e.target.result.split(',')[1]);
+      r.readAsDataURL(file);
+    });
+
+    const response = await fetch('/api/call-analytics', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key
+      },
+      body: JSON.stringify({
+        language: lang,
+        audioFormat: 'mp3',
+        audioBase64: base64
+      })
+    });
+
+    const data = await response.json();
+    if (data.status === 'success') {
+      renderResults(data);
+    } else {
+      throw new Error(data.detail || 'Analysis failed');
+    }
+
+  } catch (err) {
+    errorBox.style.display = 'block';
+    errorBox.textContent = 'Error: ' + err.message;
+  } finally {
+    clearInterval(stepInterval);
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+}
+
+function renderResults(data) {
+  const sop = data.sop_validation;
+
+  const steps = [
+    { key: 'greeting',        label: 'Greeting'        },
+    { key: 'identification',  label: 'Identification'  },
+    { key: 'problemStatement',label: 'Problem'         },
+    { key: 'solutionOffering',label: 'Solution'        },
+    { key: 'closing',         label: 'Closing'         }
+  ];
+  document.getElementById('sopStrip').innerHTML = steps.map(s => `
+    <div class="sop-step ${sop[s.key] ? 'pass' : 'fail'}">
+      <div class="sop-icon">${sop[s.key] ? '✅' : '❌'}</div>
+      <div class="sop-name">${s.label}</div>
+      <div class="sop-status ${sop[s.key] ? 'pass' : 'fail'}">${sop[s.key] ? 'Done' : 'Missing'}</div>
+    </div>
+  `).join('');
+
+  const pct = Math.round(sop.complianceScore * 100);
+  document.getElementById('scoreValue').textContent = pct;
+  setTimeout(() => document.getElementById('scoreBar').style.width = pct + '%', 100);
+
+  const tag = document.getElementById('adherenceTag');
+  tag.textContent = sop.adherenceStatus === 'FOLLOWED' ? '✓ Followed' : '✗ Not Followed';
+  tag.className = 'adherence-tag ' + (sop.adherenceStatus === 'FOLLOWED' ? 'followed' : 'not-followed');
+
+  document.getElementById('explanationText').textContent = sop.explanation;
+
+  const a = data.analytics;
+  const sentimentEmoji = a.sentiment === 'Positive' ? '😊' : a.sentiment === 'Negative' ? '😞' : '😐';
+  document.getElementById('analyticsGrid').innerHTML = `
+    <div class="analytics-card">
+      <div class="analytics-emoji">💳</div>
+      <div class="analytics-label">Payment</div>
+      <div class="analytics-value">${a.paymentPreference}</div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-emoji">🚫</div>
+      <div class="analytics-label">Rejection</div>
+      <div class="analytics-value">${a.rejectionReason}</div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-emoji">${sentimentEmoji}</div>
+      <div class="analytics-label">Sentiment</div>
+      <div class="analytics-value">${a.sentiment}</div>
+    </div>
+  `;
+
+  document.getElementById('summaryBox').textContent = data.summary || 'N/A';
+  document.getElementById('transcriptBox').textContent = data.transcript || 'N/A';
+  document.getElementById('keywordsWrap').innerHTML = (data.keywords || [])
+    .map(k => `<span class="keyword-chip">${k}</span>`).join('');
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
