@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from groq import Groq
-from typing import Optional
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 load_dotenv()
@@ -24,7 +23,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# ─── CORS ─────────────────────────────────────────────────────────────────────
+# ─── CORS Middleware ──────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -33,14 +32,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Request Model (JSON) ─────────────────────────────────────────────────────
+# ─── Request Model ────────────────────────────────────────────────────────────
 class CallRequest(BaseModel):
     language: str = "Tamil"
     audioFormat: str = "mp3"
     audioBase64: str = ""
-
-
-# ─── Helper: Build Analysis Prompt ───
 
 
 # ─── Helper: Build Analysis Prompt ───────────────────────────────────────────
@@ -51,7 +47,7 @@ def build_prompt(language: str, transcript: str) -> str:
 Transcript:
 {transcript}
 
-Return ONLY a valid JSON object with this exact structure (no extra text, no markdown):
+Return ONLY a valid JSON object with this exact structure (no extra text, no markdown backticks):
 
 {{
   "status": "success",
@@ -59,49 +55,49 @@ Return ONLY a valid JSON object with this exact structure (no extra text, no mar
   "transcript": "{safe_transcript}",
   "summary": "brief summary of the call in English",
   "sop_validation": {{
-    "greeting": true or false,
-    "identification": true or false,
-    "problemStatement": true or false,
-    "solutionOffering": true or false,
-    "closing": true or false,
+    "greeting": false,
+    "identification": false,
+    "problemStatement": false,
+    "solutionOffering": false,
+    "closing": false,
     "complianceScore": 0.0,
-    "adherenceStatus": "FOLLOWED or NOT_FOLLOWED",
+    "adherenceStatus": "NOT_FOLLOWED",
     "explanation": "explain which steps passed and which failed"
   }},
   "analytics": {{
-    "paymentPreference": "EMI or FULL_PAYMENT or PARTIAL_PAYMENT or DOWN_PAYMENT",
-    "rejectionReason": "HIGH_INTEREST or BUDGET_CONSTRAINTS or ALREADY_PAID or NOT_INTERESTED or NONE",
-    "sentiment": "Positive or Negative or Neutral"
+    "paymentPreference": "EMI",
+    "rejectionReason": "NONE",
+    "sentiment": "Neutral"
   }},
   "keywords": ["keyword1", "keyword2", "keyword3"]
 }}
 
-SOP Validation Rules:
-- greeting: true if agent says hello, hi, vanakkam, namaste, or any welcome phrase at the START
-- identification: true if agent clearly states their OWN name AND their company or organization name
-- problemStatement: true if agent clearly explains the PURPOSE of the call or the customer issue
+SOP Validation Rules - analyze transcript carefully:
+- greeting: true if agent says hello, hi, vanakkam, namaste, or any welcome phrase at START
+- identification: true if agent states their OWN name AND their company or organization name
+- problemStatement: true if agent explains the PURPOSE of the call or the customer issue
 - solutionOffering: true if agent offers any solution, course, product, EMI plan, or next steps
 - closing: true if call ends with thank you, goodbye, or any proper farewell or confirmation
 
 Compliance Score Rules:
-- complianceScore = (number of true steps) divided by 5
-- Examples: 5 true = 1.0, 4 true = 0.8, 3 true = 0.6, 2 true = 0.4, 1 true = 0.2, 0 true = 0.0
+- Count how many of the 5 SOP steps are true
+- complianceScore = true steps divided by 5
+- 5 true = 1.0, 4 true = 0.8, 3 true = 0.6, 2 true = 0.4, 1 true = 0.2, 0 true = 0.0
 
 Adherence Status Rules:
-- Write exactly "FOLLOWED" ONLY if ALL 5 steps are true
-- Write exactly "NOT_FOLLOWED" if even ONE step is false
+- Write exactly FOLLOWED only if ALL 5 steps are true
+- Write exactly NOT_FOLLOWED if even one step is false
 
 Analytics Rules:
-- paymentPreference: exactly one of: EMI, FULL_PAYMENT, PARTIAL_PAYMENT, DOWN_PAYMENT
-- rejectionReason: exactly one of: HIGH_INTEREST, BUDGET_CONSTRAINTS, ALREADY_PAID, NOT_INTERESTED, NONE
-- Use NONE for rejectionReason only if the sale was successful or no rejection happened
-- sentiment: exactly one of: Positive, Negative, Neutral
+- paymentPreference must be exactly one of: EMI, FULL_PAYMENT, PARTIAL_PAYMENT, DOWN_PAYMENT
+- rejectionReason must be exactly one of: HIGH_INTEREST, BUDGET_CONSTRAINTS, ALREADY_PAID, NOT_INTERESTED, NONE
+- sentiment must be exactly one of: Positive, Negative, Neutral
 
 Keywords Rules:
-- Extract 8 to 12 important words or phrases directly from the conversation
+- Extract 8 to 12 important words or phrases from the conversation
 - Focus on business terms, product names, course names, payment terms, company names
 
-Return ONLY valid JSON, nothing else."""
+IMPORTANT: Return ONLY the JSON object. No explanation. No markdown. No backticks."""
 
 
 # ─── Helper: Transcribe Audio ─────────────────────────────────────────────────
@@ -123,50 +119,100 @@ def transcribe_audio(client: Groq, audio_bytes: bytes, language: str) -> str:
 
 # ─── Helper: Parse LLM Response ──────────────────────────────────────────────
 def parse_llm_response(raw_text: str) -> dict:
-    if raw_text.startswith("```"):
-        raw_text = raw_text.split("```")[1]
-        if raw_text.startswith("json"):
-            raw_text = raw_text[4:]
+    # Remove markdown code fences if present
+    if "```" in raw_text:
+        parts = raw_text.split("```")
+        for part in parts:
+            part = part.strip()
+            if part.startswith("json"):
+                part = part[4:]
+            part = part.strip()
+            if part.startswith("{"):
+                raw_text = part
+                break
+
+    # Extract JSON by finding opening and closing braces
+    start = raw_text.find("{")
+    end = raw_text.rfind("}") + 1
+    if start != -1 and end > start:
+        raw_text = raw_text[start:end]
+
     return json.loads(raw_text.strip())
 
 
-# ─── Helper: Run Analysis ─────────────────────────────────────────────────────
+# ─── Helper: Safe Fallback Response ──────────────────────────────────────────
+def fallback_response(language: str, transcript: str) -> dict:
+    safe_transcript = transcript[:500].replace('"', "'").replace('\n', ' ')
+    return {
+        "status": "success",
+        "language": language,
+        "transcript": safe_transcript,
+        "summary": "Call transcript was extracted. Full analysis encountered an issue.",
+        "sop_validation": {
+            "greeting": False,
+            "identification": False,
+            "problemStatement": False,
+            "solutionOffering": False,
+            "closing": False,
+            "complianceScore": 0.0,
+            "adherenceStatus": "NOT_FOLLOWED",
+            "explanation": "SOP analysis could not be completed due to a parsing error."
+        },
+        "analytics": {
+            "paymentPreference": "FULL_PAYMENT",
+            "rejectionReason": "NONE",
+            "sentiment": "Neutral"
+        },
+        "keywords": ["call", "agent", "customer", "inquiry"]
+    }
+
+
+# ─── Helper: Run Full Analysis ────────────────────────────────────────────────
 def run_analysis(audio_bytes: bytes, language: str) -> dict:
     client = Groq(api_key=GROQ_API_KEY)
+
+    # Step 1: Transcribe audio
     try:
         transcript_text = transcribe_audio(client, audio_bytes, language)
     except Exception as e:
         transcript_text = f"Transcription failed: {str(e)}"
 
-    prompt = build_prompt(language, transcript_text)
-    chat_response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=1500,
-        temperature=0.1
-    )
-    raw_text = chat_response.choices[0].message.content.strip()
-    return parse_llm_response(raw_text)
+    # Step 2: Analyze with LLaMA
+    try:
+        prompt = build_prompt(language, transcript_text)
+        chat_response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1500,
+            temperature=0.1
+        )
+        raw_text = chat_response.choices[0].message.content.strip()
+        return parse_llm_response(raw_text)
+
+    except Exception:
+        # Return safe fallback instead of crashing
+        return fallback_response(language, transcript_text)
 
 
-# ─── Route 1: JSON + Base64 (original) ───────────────────────────────────────
+# ─── Route 1: JSON + Base64 ───────────────────────────────────────────────────
 @app.post("/api/call-analytics")
 async def analyze_call_json(
     request: CallRequest,
     x_api_key: str = Header(None)
 ):
+    # Validate API Key
     if x_api_key != API_SECRET_KEY:
         raise HTTPException(status_code=401, detail="Unauthorized: Invalid API Key")
 
+    # Decode Base64 audio
     try:
-        audio_bytes = base64.b64decode(request.audioBase64)
+        audio_bytes = base64.b64decode(request.audioBase64) if request.audioBase64 else b""
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid Base64 audio data")
 
+    # Run analysis
     try:
         return run_analysis(audio_bytes, request.language)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="AI returned invalid JSON response")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
@@ -178,15 +224,16 @@ async def analyze_call_upload(
     language: str = Form(default="Tamil"),
     x_api_key: str = Header(None)
 ):
+    # Validate API Key
     if x_api_key != API_SECRET_KEY:
         raise HTTPException(status_code=401, detail="Unauthorized: Invalid API Key")
 
+    # Read audio bytes
     audio_bytes = await file.read()
 
+    # Run analysis
     try:
         return run_analysis(audio_bytes, language)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="AI returned invalid JSON response")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
