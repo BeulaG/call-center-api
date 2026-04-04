@@ -39,6 +39,10 @@ class CallRequest(BaseModel):
     audioFormat: str = "mp3"
     audioBase64: str = ""
 
+
+# ─── Helper: Build Analysis Prompt ───
+
+
 # ─── Helper: Build Analysis Prompt ───────────────────────────────────────────
 def build_prompt(language: str, transcript: str) -> str:
     safe_transcript = transcript[:500].replace('"', "'").replace('\n', ' ')
