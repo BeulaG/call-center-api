@@ -35,10 +35,9 @@ app.add_middleware(
 
 # ─── Request Model (JSON) ─────────────────────────────────────────────────────
 class CallRequest(BaseModel):
-    language: str
-    audioFormat: str
-    audioBase64: str
-
+    language: str = "Tamil"
+    audioFormat: str = "mp3"
+    audioBase64: str = ""
 
 # ─── Helper: Build Analysis Prompt ───────────────────────────────────────────
 def build_prompt(language: str, transcript: str) -> str:
