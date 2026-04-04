@@ -3,12 +3,13 @@ import base64
 import json
 import tempfile
 
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, HTTPException, Header, File, UploadFile, Form
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from groq import Groq
+from typing import Optional
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 load_dotenv()
@@ -23,14 +24,20 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# ─── Static Files ─────────────────────────────────────────────────────────────
-app.mount("/static", StaticFiles(directory=os.path.dirname(__file__)), name="static")
+# ─── CORS ─────────────────────────────────────────────────────────────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# ─── Request Model ────────────────────────────────────────────────────────────
+# ─── Request Model (JSON) ─────────────────────────────────────────────────────
 class CallRequest(BaseModel):
-    language: str       # Tamil or Hindi
-    audioFormat: str    # Always mp3
-    audioBase64: str    # Base64 encoded MP3 audio
+    language: str
+    audioFormat: str
+    audioBase64: str
 
 
 # ─── Helper: Build Analysis Prompt ───────────────────────────────────────────
@@ -107,6 +114,7 @@ def transcribe_audio(client: Groq, audio_bytes: bytes, language: str) -> str:
             language=lang_code,
             response_format="text"
         )
+    os.unlink(tmp_path)
     return transcription if isinstance(transcription, str) else transcription.text
 
 
@@ -119,58 +127,65 @@ def parse_llm_response(raw_text: str) -> dict:
     return json.loads(raw_text.strip())
 
 
-# ─── Main API Endpoint ────────────────────────────────────────────────────────
-@app.post("/api/call-analytics")
-async def analyze_call(
-    request: CallRequest,
-    x_api_key: str = Header(None)
-):
-    # Step 1: Validate API Key
-    if x_api_key != API_SECRET_KEY:
-        raise HTTPException(
-            status_code=401,
-            detail="Unauthorized: Invalid API Key"
-        )
-
-    # Step 2: Decode Base64 Audio
-    try:
-        audio_bytes = base64.b64decode(request.audioBase64)
-    except Exception:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid Base64 audio data"
-        )
-
-    # Step 3: Transcribe Audio using Groq Whisper
+# ─── Helper: Run Analysis ─────────────────────────────────────────────────────
+def run_analysis(audio_bytes: bytes, language: str) -> dict:
     client = Groq(api_key=GROQ_API_KEY)
     try:
-        transcript_text = transcribe_audio(client, audio_bytes, request.language)
+        transcript_text = transcribe_audio(client, audio_bytes, language)
     except Exception as e:
         transcript_text = f"Transcription failed: {str(e)}"
 
-    # Step 4: Analyze Transcript using Groq LLaMA
-    try:
-        prompt = build_prompt(request.language, transcript_text)
-        chat_response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=1500,
-            temperature=0.1
-        )
-        raw_text = chat_response.choices[0].message.content.strip()
-        result = parse_llm_response(raw_text)
-        return result
+    prompt = build_prompt(language, transcript_text)
+    chat_response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=1500,
+        temperature=0.1
+    )
+    raw_text = chat_response.choices[0].message.content.strip()
+    return parse_llm_response(raw_text)
 
+
+# ─── Route 1: JSON + Base64 (original) ───────────────────────────────────────
+@app.post("/api/call-analytics")
+async def analyze_call_json(
+    request: CallRequest,
+    x_api_key: str = Header(None)
+):
+    if x_api_key != API_SECRET_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized: Invalid API Key")
+
+    try:
+        audio_bytes = base64.b64decode(request.audioBase64)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid Base64 audio data")
+
+    try:
+        return run_analysis(audio_bytes, request.language)
     except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=500,
-            detail="AI returned invalid JSON response"
-        )
+        raise HTTPException(status_code=500, detail="AI returned invalid JSON response")
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Analysis failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+
+# ─── Route 2: Multipart File Upload ──────────────────────────────────────────
+@app.post("/api/call-analytics/upload")
+async def analyze_call_upload(
+    file: UploadFile = File(...),
+    language: str = Form(default="Tamil"),
+    x_api_key: str = Header(None)
+):
+    if x_api_key != API_SECRET_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized: Invalid API Key")
+
+    audio_bytes = await file.read()
+
+    try:
+        return run_analysis(audio_bytes, language)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="AI returned invalid JSON response")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
 # ─── Frontend Route ───────────────────────────────────────────────────────────
