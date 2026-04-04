@@ -50,3 +50,12 @@
 ---
 
 ## 📁 Project Structure
+
+    call-center-api/
+    ├── src/
+    │   ├── main.py        # FastAPI backend — all API routes and AI logic
+    │   ├── index.html     # Frontend dashboard — Live API tester UI
+    │   └── style.css      # Stylesheet — UI design and animations
+    ├── requirements.txt   # Python dependencies
+    ├── .env.example       # Environment variables template
+    └── README.md          # Project documentation
